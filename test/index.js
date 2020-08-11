@@ -71,6 +71,13 @@ app.get("/offbeat", (req, res) => {
     })
 });
 
+app.get("/keyNews", (req, res) => {
+    client.get('keyNews',(err, resp)=>{
+        let data = JSON.parse(resp);
+        res.send(data);
+    })
+});
+
 app.listen(port, () => {
     console.log(`Example app is listening on port http://localhost:${port}`)
 });
