@@ -6,18 +6,19 @@ from lxml import etree
 import sys
 import json
 from bson.json_util import dumps
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
 redis_host = "redis-11422.c62.us-east-1-4.ec2.cloud.redislabs.com"
 redis_port = 11422
 redis_password = "AFahzbIs3wTxs0VMPnvTqkuqyoZOWXwV"
 r = redis.StrictRedis(host=redis_host, port=redis_port, password=redis_password, decode_responses=True)
 newsObj = {"news":[]}
 mainData = {"status": "ok","articles":[]}
-'''
+
 try:
     response = requests.get('http://feeds.bbci.co.uk/news/world/rss.xml')
     root = etree.fromstring(response.content)
     for newsItem in root.iter('item'):
-        print(newsItem)
         data = {}
         data['title'] = newsItem.find('title').text+'(source:BBC)'
         data['description'] = newsItem.find('description').text
@@ -327,7 +328,7 @@ try:
             for img in mySoup.find_all('img'):
                 data['urlToImage'] = img['data-original']
                 data['url'] = a['href']
-                data['title'] =a['title']
+                data['title'] =a['title']+'(source:Filmfare)'
                 mainData['articles'].append(data)
 except:
     print("Error in PinkVilla",sys.exc_info())
@@ -347,7 +348,7 @@ try:
             for img in mySoup.find_all('img'):
                 data['urlToImage'] = img['data-original']
                 data['url'] = a['href']
-                data['title'] =a['title']
+                data['title'] =a['title']+'(source:Filmfare)'
                 mainData['articles'].append(data)
 except:
     print("Error in PinkVilla-HollyWood",sys.exc_info())
@@ -423,7 +424,9 @@ try:
         data['title'] = newsItem.find('title').text+'(source:WHO)'
         data['url'] = newsItem.find('link').text
         data['publishedAt'] = newsItem.find('pubDate').text
+        data['urlToImage'] = "./img/who.png"
         mainData['articles'].append(data)
+
 
 except:
     print('Error in WHO',sys.exc_info())
@@ -446,7 +449,6 @@ except:
 try:
     headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
     response = requests.get('https://medicalxpress.com/rss-feed/',headers=headers)
-    print(response)
     root = etree.fromstring(response.content)
     for newsItem in root.iter('item'):
         data = {}
@@ -476,6 +478,7 @@ try:
         data['url'] = newsItem.find('link').text
         data['publishedAt'] = newsItem.find('pubDate').text
         data['description'] = newsItem.find('description').text
+        data['urlToImage'] = "./img/scienceDaily.png"
         mainData['articles'].append(data)
 
 except:
@@ -505,6 +508,7 @@ try:
         data['url'] = newsItem.find('link').text
         data['publishedAt'] = newsItem.find('pubDate').text
         data['description'] = newsItem.find('description').text
+        data['urlToImage'] = './img/ea.png'
         mainData['articles'].append(data)
 
 except:
@@ -519,6 +523,7 @@ try:
         data['url'] = newsItem.find('link').text
         data['publishedAt'] = newsItem.find('pubDate').text
         data['description'] = newsItem.find('description').text
+        data['urlToImage'] = './img/ns.png'
         mainData['articles'].append(data)
 
 except:
@@ -553,6 +558,7 @@ try:
         data['url'] = newsItem.find('link').text
         data['publishedAt'] = newsItem.find('pubDate').text
         data['description'] = newsItem.find('description').text
+        data['urlToImage'] = "./img/techRepublic.png"
         mainData['articles'].append(data)
 
 except:
@@ -567,25 +573,26 @@ try:
         data['url'] = newsItem.find('link').text
         data['publishedAt'] = newsItem.find('pubDate').text
         data['description'] = newsItem.find('description').text
+        data['urlToImage'] = "./img/zdnet.png"
         mainData['articles'].append(data)
 
 except:
     print('Error in ZDNet',sys.exc_info())
 
-try:
-    response = requests.get('https://www.buzzfeed.com/tech.xml')
-    root = etree.fromstring(response.content)
-    for newsItem in root.iter('item'):
-        data = {}
-        data['title'] = newsItem.find('title').text+'(source:BuzzFeed)'
-        data['url'] = newsItem.find('link').text
-        data['publishedAt'] = newsItem.find('pubDate').text
-        data['description'] = newsItem.find('description').text
-        data['urlToImage'] = newsItem.find('media:thumbnail',newsItem.nsmap).attrib['url']
-        mainData['articles'].append(data)
+# try:
+#     response = requests.get('https://www.buzzfeed.com/tech.xml')
+#     root = etree.fromstring(response.content)
+#     for newsItem in root.iter('item'):
+#         data = {}
+#         data['title'] = newsItem.find('title').text+'(source:BuzzFeed)'
+#         data['url'] = newsItem.find('link').text
+#         data['publishedAt'] = newsItem.find('pubDate').text
+#         data['description'] = newsItem.find('description').text
+#         data['urlToImage'] = newsItem.find('media:thumbnail',newsItem.nsmap).attrib['url']
+#         mainData['articles'].append(data)
 
-except:
-    print('Error in BuzzFeed',sys.exc_info())
+# except:
+#     print('Error in BuzzFeed',sys.exc_info())
 
 try:
     response = requests.get('https://www.engadget.com/rss.xml')
@@ -619,6 +626,7 @@ try:
         data['url'] = newsItem.find('link').text
         data['publishedAt'] = newsItem.find('a10:updated',newsItem.nsmap).text
         data['description'] = newsItem.find('description').text
+        data['urlToImage'] = './img/ndtv.png'
         mainData['articles'].append(data)
 
 except:
@@ -706,24 +714,45 @@ try:
         data['publishedAt'] = newsItem.find('pubDate').text
         description = newsItem.find('description').text
         data['description'] = unidecode.unidecode(description)
+        data['urlToImage'] = "./img/scienceDaily.png"
         mainData['articles'].append(data)
 except:
     print('Error in Science-Daily-Offbeat',sys.exc_info())
 
 newsObj['news'].append(mainData)
-print('Offbeat done!!')
-'''
-# print(list(mainContent.children))
-# print(newsObj)
-#print(json.dumps(newsObj))
+
+stop_words = set(stopwords.words('english')) 
+stop_words.add('source')
 json_data = json.dumps(newsObj)
 msg = r.get("msg:hello")
 print(msg)
-# r.set("all_news",json_data)
+r.set("all_news",json_data)
 msg2 = r.get("all_news")
-data=json.loads(msg2)
-print(data)
-# off = data["news"][0]["articles"]
-# print(off)
-# print("-------")
-# print(dumps(off))
+keywordsNewsList = []
+for indx in range(0,9):
+    data=json.loads(msg2)
+    world = data["news"][indx]["articles"]
+    thisSet = set()
+    for data in world:
+        end_index = data['title'].index('(')
+        word_tokens = word_tokenize(data['title'][0:end_index])
+        filtered_sentence = [w for w in word_tokens if not w in stop_words and len(w)>4] 
+        if len(filtered_sentence)>=3:
+            for i in range(0,3):
+                thisSet.add(filtered_sentence[i])
+    mappings = {}
+    for keyword in thisSet:
+        mappings[keyword] = []
+        for article in world:
+            end_index = article['title'].index('(')
+            title = article['title'][0:end_index]
+            if keyword in title.split():
+                mappings[keyword].append(article)
+    sorted_mappings = sorted(mappings, key=lambda k: len(mappings[k]),reverse=True)
+    obj = {}
+    for j in range(0,10):
+        obj[sorted_mappings[j]] = mappings[sorted_mappings[j]]
+    keywordsNewsList.append(obj)
+
+keyList = json.dumps(keywordsNewsList)
+r.set("keyNews",keyList)
