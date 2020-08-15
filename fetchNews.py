@@ -12,11 +12,12 @@ redis_host = "redis-11422.c62.us-east-1-4.ec2.cloud.redislabs.com"
 redis_port = 11422
 redis_password = "AFahzbIs3wTxs0VMPnvTqkuqyoZOWXwV"
 r = redis.StrictRedis(host=redis_host, port=redis_port, password=redis_password, decode_responses=True)
+headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
 newsObj = {"news":[]}
 mainData = {"status": "ok","articles":[]}
 
 try:
-    response = requests.get('http://feeds.bbci.co.uk/news/world/rss.xml')
+    response = requests.get('http://feeds.bbci.co.uk/news/world/rss.xml',headers=headers)
     root = etree.fromstring(response.content)
     for newsItem in root.iter('item'):
         data = {}
@@ -25,8 +26,8 @@ try:
         data['url'] = newsItem.find('link').text
         data['publishedAt'] = newsItem.find('pubDate').text
         imageUrl = data['url']
-        image = ""
-        page = requests.get(imageUrl)
+        image = "./img/BBCLogo.jpg"
+        page = requests.get(imageUrl,headers=headers)
         soup = BeautifulSoup(page.content, 'lxml')
         html = list(soup.children)[1]
         l = soup.find_all('span', class_='image-and-copyright-container')
@@ -41,7 +42,7 @@ except:
     print("Error in Int bbc",sys.exc_info())
 
 try:
-    response = requests.get('https://feeds.a.dj.com/rss/RSSWorldNews.xml')
+    response = requests.get('https://feeds.a.dj.com/rss/RSSWorldNews.xml',headers=headers)
     root = etree.fromstring(response.content)
     for newsItem in root.iter('item'):
         data = {}
@@ -54,7 +55,7 @@ try:
 except:
     print("error in wsj-world")
 try:
-    response = requests.get('https://www.nytimes.com/svc/collections/v1/publish/https://www.nytimes.com/section/world/rss.xml')
+    response = requests.get('https://www.nytimes.com/svc/collections/v1/publish/https://www.nytimes.com/section/world/rss.xml',headers=headers)
     root = etree.fromstring(response.content)
     for newsItem in root.iter('item'):
         data = {}
@@ -68,7 +69,7 @@ except:
     print("error in nytimes-world")
 
 try:
-    response = requests.get('https://www.aljazeera.com/xml/rss/all.xml')
+    response = requests.get('https://www.aljazeera.com/xml/rss/all.xml',headers=headers)
     root = etree.fromstring(response.content)
     for newsItem in root.iter('item'):
         data = {}
@@ -82,7 +83,7 @@ except:
     print("error in aljazeera-world")
 
 try:
-    response = requests.get('https://www.news18.com/rss/world.xml')
+    response = requests.get('https://www.news18.com/rss/world.xml',headers=headers)
     root = etree.fromstring(response.content)
     for newsItem in root.iter('item'):
         data = {}
@@ -98,7 +99,7 @@ try:
 except:
     print("Error in news18-world",sys.exc_info())
 try:
-    response = requests.get('http://rss.cnn.com/rss/edition_world.rss')
+    response = requests.get('http://rss.cnn.com/rss/edition_world.rss',headers=headers)
     root = etree.fromstring(response.content)
     for newsItem in root.iter('item'):
         data = {}
@@ -124,7 +125,7 @@ try:
 except:
     print("Error in Int cnn",sys.exc_info()[0])
 try:
-    response = requests.get('http://feeds.feedburner.com/ndtvnews-world-news')
+    response = requests.get('http://feeds.feedburner.com/ndtvnews-world-news',headers=headers)
     root = etree.fromstring(response.content)
     for newsItem in root.iter('item'):
         data = {}
@@ -144,7 +145,7 @@ print("world done!")
 #India
 
 try:
-    response = requests.get('http://feeds.feedburner.com/ndtvnews-india-news')
+    response = requests.get('http://feeds.feedburner.com/ndtvnews-india-news',headers=headers)
     root = etree.fromstring(response.content)
     for newsItem in root.iter('item'):
         data = {}
@@ -158,7 +159,7 @@ except:
     print("Error in ndtv-India")
 
 try:
-    response = requests.get('https://zeenews.india.com/rss/india-national-news.xml')
+    response = requests.get('https://zeenews.india.com/rss/india-national-news.xml',headers=headers)
     root = etree.fromstring(response.content)
     for newsItem in root.iter('item'):
         data ={}
@@ -168,22 +169,18 @@ try:
         data['url'] = newsItem.find('link').text
         imageUrl = data['url']
         image = './img/zeeNews.jpg'
-        page = requests.get(imageUrl)
-        soup = BeautifulSoup(page.content, 'lxml')
-        html = list(soup.children)[1]
-        l = soup.find_all('div', class_='article-image-block')
-        if len(l)>0:
-            content=str(l[0])
-            src_index = content.index("src=")+5
-            jpg_index = content.index("\"",src_index)
-            image = content[src_index:jpg_index]
         data['urlToImage'] = image
+        page = requests.get(imageUrl,headers=headers)
+        soup = BeautifulSoup(page.content, 'lxml')
+        l = soup.find_all('div', class_='field-item')
+        extractedImage = l[0].find('img')['src']
+        if extractedImage is not None:
+            data['urlToImage'] = extractedImage
         mainData['articles'].append(data)
 except:
     print('Error in ZeeNews',sys.exc_info())
-
 try:
-    response = requests.get('https://timesofindia.indiatimes.com/rssfeeds/-2128936835.cms')
+    response = requests.get('https://timesofindia.indiatimes.com/rssfeeds/-2128936835.cms',headers=headers)
     root = etree.fromstring(response.content)
     for newsItem in root.iter('item'):
         data = {}
@@ -198,7 +195,7 @@ try:
                 data['description'] = description
         data['url'] = newsItem.find('link').text
         imageUrl = newsItem.find('link').text
-        page = requests.get(imageUrl)
+        page = requests.get(imageUrl,headers=headers)
         soup = BeautifulSoup(page.content, 'lxml')
         html = list(soup.children)[1]
         l = soup.find_all('section', class_='_2suu5')
@@ -212,7 +209,7 @@ except:
     print("Error in toi",sys.exc_info())
 
 try:
-    response = requests.get('https://www.thehindu.com/news/national/feeder/default.rss')
+    response = requests.get('https://www.thehindu.com/news/national/feeder/default.rss',headers=headers)
     root = etree.fromstring(response.content)
     for newsItem in root.iter('item'):
         data ={}
@@ -221,17 +218,17 @@ try:
         data['description'] = newsItem.find('description').text
         data['publishedAt'] = newsItem.find('pubDate').text
         data['url'] = newsItem.find('link').text
-        page = requests.get(data['url'])
+        page = requests.get(data['url'],headers=headers)
         soup = BeautifulSoup(page.content, 'lxml')
         html = list(soup.children)[1]
         l = soup.find_all('picture')
         data['urlToImage'] = image
         mainData['articles'].append(data)
 except:
-    print("Error in The Hundu",sys.exc_info())
+    print("Error in The Hindu",sys.exc_info())
 
 try:
-    response = requests.get('https://www.dnaindia.com/feeds/india.xml')
+    response = requests.get('https://www.dnaindia.com/feeds/india.xml',headers=headers)
     root = etree.fromstring(response.content)
     for newsItem in root.iter('item'):
         data = {}
@@ -250,7 +247,7 @@ mainData = {"status": "ok","articles":[]}
 print("India done!")
 
 try:
-    response = requests.get('http://www.moneycontrol.com/rss/MCtopnews.xml')
+    response = requests.get('http://www.moneycontrol.com/rss/MCtopnews.xml',headers=headers)
     root = etree.fromstring(response.content)
     for newsItem in root.iter('item'):
         data = {}
@@ -266,7 +263,7 @@ except:
     print('Error in MoneyControl',sys.exc_info())
 
 try:
-    response = requests.get('https://www.firstpost.com/rss/business.xml')
+    response = requests.get('https://www.firstpost.com/rss/business.xml',headers=headers)
     root = etree.fromstring(response.content)
     for newsItem in root.iter('item'):
         data = {}
@@ -282,7 +279,7 @@ except:
     print("Error in fp-business")
 
 try:
-    response = requests.get('http://feeds.feedburner.com/ndtvprofit-latest')
+    response = requests.get('http://feeds.feedburner.com/ndtvprofit-latest',headers=headers)
     root = etree.fromstring(response.content)
     for newsItem in root.iter('item'):
         data = {}
@@ -296,7 +293,7 @@ except:
     print("Error in ndtv-profit",sys.exc_info())
 
 try:
-    response = requests.get('https://www.hindustantimes.com/rss/business/rssfeed.xml')
+    response = requests.get('https://www.hindustantimes.com/rss/business/rssfeed.xml',headers=headers)
     root = etree.fromstring(response.content)
     for newsItem in root.iter('item'):
         data = {}
@@ -314,7 +311,7 @@ mainData = {"status": "ok","articles":[]}
 print("Business done!")
 
 try:
-    response = requests.get('https://www.filmfare.com/news/bollywood')
+    response = requests.get('https://www.filmfare.com/news/bollywood',headers=headers)
     soup = BeautifulSoup(response.content,'html.parser')
     trending = soup.find_all(class_='news-section')
     trending_html = list(trending)
@@ -331,10 +328,10 @@ try:
                 data['title'] =a['title']+'(source:Filmfare)'
                 mainData['articles'].append(data)
 except:
-    print("Error in PinkVilla",sys.exc_info())
+    print("Error in Filmfare",sys.exc_info())
 
 try:
-    response = requests.get('https://www.filmfare.com/news/hollywood')
+    response = requests.get('https://www.filmfare.com/news/hollywood',headers=headers)
     soup = BeautifulSoup(response.content,'html.parser')
     trending = soup.find_all(class_='news-section')
     trending_html = list(trending)
@@ -351,10 +348,10 @@ try:
                 data['title'] =a['title']+'(source:Filmfare)'
                 mainData['articles'].append(data)
 except:
-    print("Error in PinkVilla-HollyWood",sys.exc_info())
+    print("Error in Filmfare-HollyWood",sys.exc_info())
 
 try:
-    response = requests.get('http://feeds.bbci.co.uk/news/entertainment_and_arts/rss.xml')
+    response = requests.get('http://feeds.bbci.co.uk/news/entertainment_and_arts/rss.xml',headers=headers)
     root = etree.fromstring(response.content)
     for newsItem in root.iter('item'):
         data = {}
@@ -364,7 +361,7 @@ try:
         data['publishedAt'] = newsItem.find('pubDate').text
         imageUrl = data['url']
         image = "./img/BBCLogo.jpg"
-        page = requests.get(imageUrl)
+        page = requests.get(imageUrl,headers=headers)
         soup = BeautifulSoup(page.content, 'lxml')
         html = list(soup.children)[1]
         l = soup.find_all('span', class_='image-and-copyright-container')
@@ -380,7 +377,6 @@ except:
 
 
 try:
-    headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
     response = requests.get('https://www.hindustantimes.com/rss/entertainment/rssfeed.xml',headers=headers)
     root = etree.fromstring(response.content)
     for newsItem in root.iter('item'):
@@ -396,7 +392,7 @@ except:
     print("Error in HT-Entertainment")
 
 try:
-    response = requests.get('http://rss.cnn.com/rss/edition_entertainment.rss')
+    response = requests.get('http://rss.cnn.com/rss/edition_entertainment.rss',headers=headers)
     root = etree.fromstring(response.content)
     for newsItem in root.iter('item'):
         data = {}
@@ -417,7 +413,7 @@ print('Entertainment done!!')
 
 mainData = {"status": "ok","articles":[]}
 try:
-    response = requests.get('https://www.who.int/rss-feeds/news-english.xml')
+    response = requests.get('https://www.who.int/rss-feeds/news-english.xml',headers=headers)
     root = etree.fromstring(response.content)
     for newsItem in root.iter('item'):
         data = {}
@@ -432,7 +428,7 @@ except:
     print('Error in WHO',sys.exc_info())
 
 try:
-    response = requests.get('https://health.economictimes.indiatimes.com/rss/topstories')
+    response = requests.get('https://health.economictimes.indiatimes.com/rss/topstories',headers=headers)
     root = etree.fromstring(response.content)
     for newsItem in root.iter('item'):
         data = {}
@@ -447,7 +443,6 @@ except:
     print('Error in ET-Health',sys.exc_info())
 
 try:
-    headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
     response = requests.get('https://medicalxpress.com/rss-feed/',headers=headers)
     root = etree.fromstring(response.content)
     for newsItem in root.iter('item'):
@@ -469,7 +464,6 @@ print('Health done!!')
 mainData = {"status": "ok","articles":[]}
 
 try:
-    headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
     response = requests.get('https://www.sciencedaily.com/rss/all.xml',headers=headers)
     root = etree.fromstring(response.content)
     for newsItem in root.iter('item'):
@@ -485,7 +479,7 @@ except:
     print('Error in Science Daily',sys.exc_info())
 
 try:
-    response = requests.get('https://www.wired.com/category/science/feed')
+    response = requests.get('https://www.wired.com/category/science/feed',headers=headers)
     root = etree.fromstring(response.content)
     for newsItem in root.iter('item'):
         data = {}
@@ -500,7 +494,7 @@ except:
     print('Error in Wired',sys.exc_info())
 
 try:
-    response = requests.get('https://www.eurekalert.org/rss.xml')
+    response = requests.get('https://www.eurekalert.org/rss.xml',headers=headers)
     root = etree.fromstring(response.content)
     for newsItem in root.iter('item'):
         data = {}
@@ -515,7 +509,7 @@ except:
     print('Error in Eurekalert',sys.exc_info())
 
 try:
-    response = requests.get('https://feeds.newscientist.com/')
+    response = requests.get('https://feeds.newscientist.com/',headers=headers)
     root = etree.fromstring(response.content)
     for newsItem in root.iter('item'):
         data = {}
@@ -535,7 +529,7 @@ print('Science done!!')
 mainData = {"status": "ok","articles":[]}
 
 try:
-    response = requests.get('https://www.wired.com/feed/rss')
+    response = requests.get('https://www.wired.com/feed/rss',headers=headers)
     root = etree.fromstring(response.content)
     for newsItem in root.iter('item'):
         data = {}
@@ -550,7 +544,7 @@ except:
     print('Error in Wired',sys.exc_info())
 
 try:
-    response = requests.get('https://www.techrepublic.com/rssfeeds/articles/')
+    response = requests.get('https://www.techrepublic.com/rssfeeds/articles/',headers=headers)
     root = etree.fromstring(response.content)
     for newsItem in root.iter('item'):
         data = {}
@@ -565,7 +559,7 @@ except:
     print('Error in Tech Republic',sys.exc_info())
 
 try:
-    response = requests.get('https://www.zdnet.com/news/rss.xml')
+    response = requests.get('https://www.zdnet.com/news/rss.xml',headers=headers)
     root = etree.fromstring(response.content)
     for newsItem in root.iter('item'):
         data = {}
@@ -595,7 +589,7 @@ except:
 #     print('Error in BuzzFeed',sys.exc_info())
 
 try:
-    response = requests.get('https://www.engadget.com/rss.xml')
+    response = requests.get('https://www.engadget.com/rss.xml',headers=headers)
     root = etree.fromstring(response.content)
     for newsItem in root.iter('item'):
         data = {}
@@ -618,7 +612,7 @@ print('Tech done!!')
 mainData = {"status": "ok","articles":[]}
 
 try:
-    response = requests.get('https://sports.ndtv.com/rss/all')
+    response = requests.get('https://sports.ndtv.com/rss/all',headers=headers)
     root = etree.fromstring(response.content)
     for newsItem in root.iter('item'):
         data = {}
@@ -633,7 +627,7 @@ except:
     print('Error in NDTV',sys.exc_info())
 
 try:
-    response = requests.get('https://www.espn.com/espn/rss/news')
+    response = requests.get('https://www.espn.com/espn/rss/news',headers=headers)
     root = etree.fromstring(response.content)
     for newsItem in root.iter('item'):
         data = {}
@@ -647,7 +641,7 @@ except:
     print('Error in ESPN',sys.exc_info())
 
 try:
-    response = requests.get('https://timesofindia.indiatimes.com/rssfeeds/4719148.cms')
+    response = requests.get('https://timesofindia.indiatimes.com/rssfeeds/4719148.cms',headers=headers)
     root = etree.fromstring(response.content)
     for newsItem in root.iter('item'):
         data = {}
@@ -665,7 +659,7 @@ except:
     print('Error in TOI',sys.exc_info())
 
 try:
-    response = requests.get('https://zeenews.india.com/rss/sports-news.xml')
+    response = requests.get('https://zeenews.india.com/rss/sports-news.xml',headers=headers)
     root = etree.fromstring(response.content)
     for newsItem in root.iter('item'):
         data = {}
@@ -689,7 +683,7 @@ print('Sports done!!')
 mainData = {"status": "ok","articles":[]}
 
 try:
-    response = requests.get('http://feeds.feedburner.com/ndtvnews-offbeat-news')
+    response = requests.get('http://feeds.feedburner.com/ndtvnews-offbeat-news',headers=headers)
     root = etree.fromstring(response.content)
     for newsItem in root.iter('item'):
         data = {}
@@ -704,7 +698,6 @@ except:
     print('Error in NDTV Offbeat',sys.exc_info())
 
 try:
-    headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
     response = requests.get('https://www.sciencedaily.com/rss/strange_offbeat.xml',headers=headers)
     root = etree.fromstring(response.content)
     for newsItem in root.iter('item'):
