@@ -78,6 +78,13 @@ app.get("/keyNews", (req, res) => {
     })
 });
 
+app.get("/backImg", (req,res) =>{
+    client.get('all_news',(err, resp)=>{
+        let data = JSON.parse(resp);
+        res.send(data['backImg']);
+    })
+})
+
 app.listen(port, () => {
     console.log(`Example app is listening on port http://localhost:${port}`)
 });
