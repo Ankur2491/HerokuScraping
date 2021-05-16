@@ -81,7 +81,8 @@ app.get("/keyNews", (req, res) => {
 app.get("/backImg", (req,res) =>{
     client.get('all_news',(err, resp)=>{
         let data = JSON.parse(resp);
-        res.send(data['backImg']);
+        let x = {'url': data['backImg']};
+        res.send(x);
     })
 })
 
