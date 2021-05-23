@@ -2,6 +2,7 @@ const Cors = require('cors');
 var redis = require('redis');
 let redis_host = "redis-11422.c62.us-east-1-4.ec2.cloud.redislabs.com"
 let redis_port = 11422
+const axios = require('axios');
 let redis_password = "AFahzbIs3wTxs0VMPnvTqkuqyoZOWXwV"
 var client = redis.createClient({ host: redis_host, port: redis_port, password: redis_password })
 const express = require("express");
@@ -83,6 +84,15 @@ app.get("/backImg", (req,res) =>{
         let data = JSON.parse(resp);
         let x = {'url': data['backImg']};
         res.send(x);
+    })
+})
+
+app.get("/joke", (req,res) =>{
+    const options = {
+        headers: {'Accept': 'application/json'}
+    }
+    axios.get('https://icanhazdadjoke.com/',options).then(response=>{
+        res.send(response.data)
     })
 })
 
